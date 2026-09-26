@@ -1,169 +1,213 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Task Manager</title>
+@extends('layouts.app')
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-            margin: 0;
-            padding: 40px;
-        }
+@section('content')
 
-        .container {
-            max-width: 900px;
-            margin: auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-        }
+<div class="topbar">
 
-        h1 {
-            margin-top: 0;
-        }
+    <div>
+        <div class="page-title">
+            Tasks
+        </div>
 
-        .add-btn {
-            display: inline-block;
-            background: #2563eb;
-            color: white;
-            padding: 10px 15px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
+        <div class="page-subtitle">
+            View and manage all your tasks.
+        </div>
+    </div>
 
-        .success {
-            background: #d1fae5;
-            color: #065f46;
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-        }
-
-        th {
-            background: #f1f5f9;
-        }
-
-        .edit-btn {
-            background: #f59e0b;
-            color: white;
-            padding: 6px 10px;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-
-        .delete-btn {
-            background: #dc2626;
-            color: white;
-            padding: 6px 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .status {
-            font-weight: bold;
-        }
-    </style>
-</head>
-
-<body>
-
-<div class="container">
-
-    <h1>Personal Task Manager</h1>
-
-    <a href="{{ route('tasks.create') }}" class="add-btn">
+    <a href="{{ route('tasks.create') }}" class="add-button">
         + Add Task
     </a>
 
-    @if(session('success'))
-        <div class="success">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if($tasks->count() > 0)
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Task</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                    <th>Due Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                @foreach($tasks as $task)
-
-                    <tr>
-                        <td>{{ $task->task_name }}</td>
-
-                        <td>{{ $task->description }}</td>
-
-                        <td class="status">
-                            {{ $task->status }}
-                        </td>
-
-                        <td>
-                            {{ $task->due_date ?? 'No due date' }}
-                        </td>
-
-                        <td>
-
-                            <a href="{{ route('tasks.edit', $task) }}"
-                               class="edit-btn">
-                                Edit
-                            </a>
-
-                            <form action="{{ route('tasks.destroy', $task) }}"
-                                  method="POST"
-                                  style="display:inline;">
-
-                                @csrf
-                                @method('DELETE')
-
-                                <button type="submit"
-                                        class="delete-btn"
-                                        onclick="return confirm('Delete this task?')">
-                                    Delete
-                                </button>
-
-                            </form>
-
-                        </td>
-                    </tr>
-
-                @endforeach
-
-            </tbody>
-        </table>
-
-    @else
-
-        <p>No tasks yet. Click <strong>Add Task</strong> to create one.</p>
-
-    @endif
-
 </div>
 
-</body>
-</html>
+<style>
+
+    .task-card {
+        background: white;
+        border: 1px solid #eee;
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+
+    .task-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .task-title {
+        font-size: 17px;
+        font-weight: bold;
+    }
+
+    .description {
+        color: #777;
+        font-size: 13px;
+        margin-top: 7px;
+    }
+
+    .due-date {
+        color: #888;
+        font-size: 12px;
+        margin-top: 8px;
+    }
+
+    .actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn {
+        border: none;
+        padding: 9px 13px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .btn-edit {
+        background: #bcc4f2;
+        color: #252525;
+    }
+
+    .btn-delete {
+        background: #ffe0e0;
+        color: #d63232;
+    }
+
+    .btn-status {
+        background: #e93f1a;
+        color: white;
+    }
+
+    .badge {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: bold;
+    }
+
+    .pending {
+        background: #fff0e9;
+        color: #e93f1a;
+    }
+
+    .completed {
+        background: #e0f5e7;
+        color: #24834a;
+    }
+
+</style>
+
+@if(session('success'))
+
+    <div style="
+        background:#e0f5e7;
+        color:#24834a;
+        padding:14px;
+        border-radius:10px;
+        margin-bottom:20px;
+    ">
+        {{ session('success') }}
+    </div>
+
+@endif
+
+@forelse($tasks as $task)
+
+    <div class="task-card">
+
+        <div class="task-row">
+
+            <div>
+
+                <div class="task-title">
+                    {{ $task->task_name }}
+                </div>
+
+                <div class="description">
+                    {{ $task->description ?: 'No description' }}
+                </div>
+
+                <div class="due-date">
+
+                    @if($task->due_date)
+                        Due: {{ $task->due_date->format('M d, Y') }}
+                    @else
+                        No due date
+                    @endif
+
+                </div>
+
+                @if($task->status === 'Completed')
+
+                    <span class="badge completed">
+                        Completed
+                    </span>
+
+                @else
+
+                    <span class="badge pending">
+                        Pending
+                    </span>
+
+                @endif
+
+            </div>
+
+            <div class="actions">
+
+                <form method="POST"
+                      action="{{ route('tasks.status', $task) }}">
+
+                    @csrf
+                    @method('PATCH')
+
+                    <button class="btn btn-status">
+                        {{ $task->status === 'Pending' ? 'Complete' : 'Pending' }}
+                    </button>
+
+                </form>
+
+                <a
+                    href="{{ route('tasks.edit', $task) }}"
+                    class="btn btn-edit">
+                    Edit
+                </a>
+
+                <form
+                    method="POST"
+                    action="{{ route('tasks.destroy', $task) }}"
+                    onsubmit="return confirm('Delete this task?');">
+
+                    @csrf
+                    @method('DELETE')
+
+                    <button class="btn btn-delete">
+                        Delete
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+@empty
+
+    <div class="task-card">
+        <p style="color:#777;">
+            No tasks found.
+        </p>
+    </div>
+
+@endforelse
+
+@endsection
